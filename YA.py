@@ -19,7 +19,7 @@ class YA():
                         'Authorization': self.token
                         }
         self.params = {'path':'disk:/'}
-        self.name_folder = 'Диплом_Сорокин'
+        self.name_folder = 'diplom_sorokin'
         self.name_photo = name_photo
         self.size = size
 
@@ -89,7 +89,7 @@ class YA():
     
     def dowland_photo(self):
         url = 'https://cloud-api.yandex.net/v1/disk/resources/download?'
-        public_key = f'/{self.name_folder}/{self.name_photo}'
-        response = requests.get(url, path = public_key,  headers={**self.headers})
+        path = f'path=/{self.name_folder}/{self.name_photo}.jpg'
+        response = requests.get(url+path,  headers={**self.headers})
         download_url = response.json()['href']
         return download_url

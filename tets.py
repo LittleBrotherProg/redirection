@@ -24,39 +24,61 @@ class VK:
         self.vk = self.vk_session.get_api()
         self.peer_id = 146246943
         self.upload = VkUpload(self.vk)
+        self.params = {
+                    'access_token': self.token, 
+                    'v': '5.131'
+                    }
 
     # Функция для поиски новых сообщений от конкретного пользователя
     def catch_messages(self):
         longpoll = VkLongPoll(self.vk_session)
         for event in longpoll.listen():
             # Ловим новое сообщение и проверяем от кого оно
-            if event.type == VkEventType.MESSAGE_NEW and event.user_id == 146246943:
+            if event.type == VkEventType.MESSAGE_NEW and event.user_id == 146246943 and  event.to_me:
+                if event.attachments['attach1_type'] == 'photo':
+                    pass
+                    # id_profile_picture = event.attachments['attach1']
+                    # url = 'https://api.vk.com/method/photos.get'
+                    # params= {
+                    #             'owner_id': 422264572, 
+                    #             'photo_ids': id_profile_picture,
+                    #             'extended': '1'
+                    #             }
+                    # info_photo = requests.get(
+                    #                             url, 
+                    #                             params={
+                    #                                     **self.params, 
+                    #                                     **params
+                    #                                     }
+                    #                             )
+                    # bot.send_message(1052739314, i['photo']['sizes'][-1]['url'])
+
                 # Вытаскиваем текст нужного нам сообщения и помешаем в переменную  
-                user = self.vk_session.method("users.get", 
-                                              {"user_ids": event.user_id}
-                                              )
-                full_name = user[0]['first_name'] + ' ' + user[0]['last_name']
-                message_for_tg = event.text
-                # Пеобразование времени отправки сообщения в читаемое
-                value = datetime.datetime.fromtimestamp(event.timestamp)
-                time = value.strftime('%Y-%m-%d %H:%M:%S')
-                # Выводим в консоль дату и и время, от кого сообщение и текст сообщения
-                print('=' * 20,
-                      '\n',
-                      f'Дата и время отправки: {time}\n',
-                      f'Сообщение от: {full_name}\n', 
-                      f'Текст сообщения: {message_for_tg}',
-                    )
-                # Инцилизируем класс отвечающий за работу с Телеграммом
-                tg = TG()
-                # Активирцем функцию для отправки сообщения в Телеграмм
-                status = tg.accept_message(message_for_tg)
-                # Выводим в консоль статус кода и расшифровку
-                print(f'Код запроспа на отправку сообщения в тг: {status[0]}',
-                      '\n',
-                      f'Расшифровка кода запроса: {status[1]} \n',
-                      '=' * 20        
-                      )
+                # user = self.vk_session.method("users.get", 
+                #                               {"user_ids": event.user_id}
+                #                               )
+                # full_name = user[0]['first_name'] + ' ' + user[0]['last_name']
+                # message_for_tg = event.text
+                # # Пеобразование времени отправки сообщения в читаемое
+                # value = datetime.datetime.fromtimestamp(event.timestamp)
+                # time = value.strftime('%Y-%m-%d %H:%M:%S')
+                # # Выводим в консоль дату и и время, от кого сообщение и текст сообщения
+                # print('=' * 20,
+                #       '\n',
+                #       f'Дата и время отправки: {time}\n',
+                #       f'Сообщение от: {full_name}\n', 
+                #       f'Текст сообщения: {message_for_tg}',
+                #     )
+                # # Инцилизируем класс отвечающий за работу с Телеграммом
+                # tg = TG()
+                # # Активирцем функцию для отправки сообщения в Телеграмм
+                # status = tg.accept_message(message_for_tg)
+                # # Выводим в консоль статус кода и расшифровку
+                # print(f'Код запроспа на отправку сообщения в тг: {status[0]}',
+                #       '\n',
+                #       f'Расшифровка кода запроса: {status[1]} \n',
+                #       '=' * 20        
+                #       )
     # Функция отправки сообщения из Телеграмма в Вк
     def accept_message_text(self, message_tg, random_id):
         # Отправка сообщения
@@ -74,7 +96,7 @@ class VK:
         photo_id = response['id']
         access_key = response['access_key']
         attachment = f'photo{owner_id}_{photo_id}_{access_key}'
-        vk.messages.send(
+        self.vk.messages.send(
             random_id=get_random_id(),
             peer_id=self.peer_id,
             attachment=attachment
