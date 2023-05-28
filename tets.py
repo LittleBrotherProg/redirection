@@ -35,8 +35,10 @@ class VK:
         for event in longpoll.listen():
             # Ловим новое сообщение и проверяем от кого оно
             if event.type == VkEventType.MESSAGE_NEW and event.user_id == 146246943 and  event.to_me:
-                if event.attachments['attach1_type'] == 'photo':
-                    pass
+                # if event.attachments['attach1_type'] == 'photo':
+                #     id = event.user_id
+                #     self.vk.method('photos.getById', "photo": 146246943_457261583)
+                #     self.vk.method("messages.send", {"peer_id": id, "message": "TEST", "attachment": event.attachments['attach1'], "random_id": 0})
                     # id_profile_picture = event.attachments['attach1']
                     # url = 'https://api.vk.com/method/photos.get'
                     # params= {
@@ -54,31 +56,31 @@ class VK:
                     # bot.send_message(1052739314, i['photo']['sizes'][-1]['url'])
 
                 # Вытаскиваем текст нужного нам сообщения и помешаем в переменную  
-                # user = self.vk_session.method("users.get", 
-                #                               {"user_ids": event.user_id}
-                #                               )
-                # full_name = user[0]['first_name'] + ' ' + user[0]['last_name']
-                # message_for_tg = event.text
-                # # Пеобразование времени отправки сообщения в читаемое
-                # value = datetime.datetime.fromtimestamp(event.timestamp)
-                # time = value.strftime('%Y-%m-%d %H:%M:%S')
-                # # Выводим в консоль дату и и время, от кого сообщение и текст сообщения
-                # print('=' * 20,
-                #       '\n',
-                #       f'Дата и время отправки: {time}\n',
-                #       f'Сообщение от: {full_name}\n', 
-                #       f'Текст сообщения: {message_for_tg}',
-                #     )
-                # # Инцилизируем класс отвечающий за работу с Телеграммом
-                # tg = TG()
-                # # Активирцем функцию для отправки сообщения в Телеграмм
-                # status = tg.accept_message(message_for_tg)
-                # # Выводим в консоль статус кода и расшифровку
-                # print(f'Код запроспа на отправку сообщения в тг: {status[0]}',
-                #       '\n',
-                #       f'Расшифровка кода запроса: {status[1]} \n',
-                #       '=' * 20        
-                #       )
+                user = self.vk_session.method("users.get", 
+                                              {"user_ids": event.user_id}
+                                              )
+                full_name = user[0]['first_name'] + ' ' + user[0]['last_name']
+                message_for_tg = event.text
+                # Пеобразование времени отправки сообщения в читаемое
+                value = datetime.datetime.fromtimestamp(event.timestamp)
+                time = value.strftime('%Y-%m-%d %H:%M:%S')
+                # Выводим в консоль дату и и время, от кого сообщение и текст сообщения
+                print('=' * 20,
+                      '\n',
+                      f'Дата и время отправки: {time}\n',
+                      f'Сообщение от: {full_name}\n', 
+                      f'Текст сообщения: {message_for_tg}',
+                    )
+                # Инцилизируем класс отвечающий за работу с Телеграммом
+                tg = TG()
+                # Активирцем функцию для отправки сообщения в Телеграмм
+                status = tg.accept_message(message_for_tg)
+                # Выводим в консоль статус кода и расшифровку
+                print(f'Код запроспа на отправку сообщения в тг: {status[0]}',
+                      '\n',
+                      f'Расшифровка кода запроса: {status[1]} \n',
+                      '=' * 20        
+                      )
     # Функция отправки сообщения из Телеграмма в Вк
     def accept_message_text(self, message_tg, random_id):
         # Отправка сообщения
@@ -91,6 +93,22 @@ class VK:
         f = BytesIO(img)
 
         response = self.upload.photo_messages(f)[0]
+
+        owner_id = response['owner_id']
+        photo_id = response['id']
+        access_key = response['access_key']
+        attachment = f'photo{owner_id}_{photo_id}_{access_key}'
+        self.vk.messages.send(
+            random_id=get_random_id(),
+            peer_id=self.peer_id,
+            attachment=attachment
+        )
+    
+    def upload_document(self, url):
+        document = requests.get(url).content
+        f = BytesIO(document)
+
+        response = self.upload.document_messages(f)[0]
 
         owner_id = response['owner_id']
         photo_id = response['id']
@@ -143,6 +161,23 @@ class TG:
             load_photo.create_folder()
             load_photo.loading_profile_picture()
             dowland_url = load_photo.dowland_photo()
+            vk = VK()
+            vk.upload_photo(dowland_url)
+
+        @self.bot.message_handler(content_types=['document'])
+        def catch_photo(message):
+            file = self.bot.get_file(message.document.file_id)
+            # file_info = self.bot.get_file(file_id)
+            # downloaded_file = self.bot.download_file(file_info.file_path)
+            url = f'https://api.telegram.org/file/bot{self.token}/{file.file_path}'
+            load_photo = YA( 
+                    url,  
+                    str(message.document.file_name), 
+                    message.document.file_size
+                    )
+            load_photo.create_folder()
+            load_photo.loading_profile_picture()
+            dowland_url = load_photo.dowland_document()
             vk = VK()
             vk.upload_photo(dowland_url)
 

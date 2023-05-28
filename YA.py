@@ -2,6 +2,7 @@ import requests
 import json
 from progress.bar import ChargingBar
 from urllib.parse import urlencode
+from time import sleep
 
 
 class YA():
@@ -69,8 +70,7 @@ class YA():
                         self.params.get('path') 
                         + self.name_folder 
                         + '/' 
-                        + self.name_photo 
-                        + '.jpg', 
+                        + self.name_photo, 
                      url = self.url_photo
                     )
         bar_loading_profile_picture.next(25)
@@ -81,8 +81,8 @@ class YA():
                                 )
         bar_loading_profile_picture.next(25)
         info_file = {
-                    'file_name':self.name_photo 
-                    + '.jpg', 'size':self.size 
+                    'file_name':self.name_photo , 
+                    'size':self.size 
                     }
         bar_loading_profile_picture.finish()
         return succsesful, info_file
@@ -91,5 +91,13 @@ class YA():
         url = 'https://cloud-api.yandex.net/v1/disk/resources/download?'
         path = f'path=/{self.name_folder}/{self.name_photo}.jpg'
         response = requests.get(url+path,  headers={**self.headers})
+        download_url = response.json()['href']
+        return download_url
+    
+    def dowland_document(self):
+        url = 'https://cloud-api.yandex.net/v1/disk/resources/download?'
+        path = f'path=/{self.name_folder}/{self.name_photo}'
+        response = requests.get(url+path,  headers={**self.headers})
+        sleep(5)
         download_url = response.json()['href']
         return download_url
