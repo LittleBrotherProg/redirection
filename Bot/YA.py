@@ -1,8 +1,7 @@
 import requests
-import json
-from progress.bar import ChargingBar
-from urllib.parse import urlencode
+# from progress.bar import ChargingBar
 from time import sleep
+import os
 
 
 class YA():
@@ -13,7 +12,7 @@ class YA():
                 name_photo, 
                 size
                 ):
-        self.token = open('token_YA.txt').read()
+        self.token = os.getenv("YAME")
         self.url_photo = url_photo
         self.headers = {
                         'Content-Type': 'application/json', 
@@ -26,10 +25,10 @@ class YA():
 
 
     def create_folder(self):
-        bar_create_folder = ChargingBar(
-            'Создание/Проверка папки для фото', 
-            max = 100
-            )
+        # bar_create_folder = ChargingBar(
+        #     'Создание/Проверка папки для фото', 
+        #     max = 100
+        #     )
         url = 'https://cloud-api.yandex.net/v1/disk/resources'
         info_folder = requests.get(
                                 url, 
@@ -37,9 +36,9 @@ class YA():
                                 params={**self.params}
                                 )
         count_files = len(info_folder.json()['_embedded']['items'])
-        bar_create_folder.next(25)
+        # bar_create_folder.next(25)
         for count in range(int(count_files)):
-            bar_create_folder.next(25)
+            # bar_create_folder.next(25)
             type_files = info_folder.json()['_embedded']['items'][count]['type']
             count_name_folder = info_folder.json()['_embedded']['items'][count]['name']
             if (type_files == 'dir'):
@@ -54,18 +53,18 @@ class YA():
                                 headers={**self.headers}, 
                                 params={**params}
                                 )
-        bar_create_folder.finish()
+        # bar_create_folder.finish()
         return
 
 
     def loading_profile_picture(self):
-        bar_loading_profile_picture = ChargingBar(
-            'Загрузка файла на диски', 
-            max = 100
-            )
-        bar_loading_profile_picture.next(25)
+        # bar_loading_profile_picture = ChargingBar(
+        #     'Загрузка файла на диски', 
+        #     max = 100
+        #     )
+        # bar_loading_profile_picture.next(25)
         url_loading = 'https://cloud-api.yandex.net/v1/disk/resources/upload'
-        bar_loading_profile_picture.next(25)
+        # bar_loading_profile_picture.next(25)
         params = dict(path = 
                         self.params.get('path') 
                         + self.name_folder 
@@ -73,31 +72,49 @@ class YA():
                         + self.name_photo, 
                      url = self.url_photo
                     )
-        bar_loading_profile_picture.next(25)
+        # bar_loading_profile_picture.next(25)
         succsesful = requests.post( 
                                     url_loading, 
                                     params={**params}, 
                                     headers={**self.headers}
                                 )
-        bar_loading_profile_picture.next(25)
+        # bar_loading_profile_picture.next(25)
         info_file = {
                     'file_name':self.name_photo , 
                     'size':self.size 
                     }
-        bar_loading_profile_picture.finish()
+        # bar_loading_profile_picture.finish()
         return succsesful, info_file
     
     def dowland_photo(self):
-        url = 'https://cloud-api.yandex.net/v1/disk/resources/download?'
-        path = f'path=/{self.name_folder}/{self.name_photo}.jpg'
-        response = requests.get(url+path,  headers={**self.headers})
-        download_url = response.json()['href']
-        return download_url
-    
-    def dowland_document(self):
+        def check_load(re_json, url, path):
+            if "href" in re_json:
+                download_url = re_json['href']
+                return download_url
+            else:
+                sleep(3)
+                response = requests.get(url+path,  headers={**self.headers})
+                return check_load(response.json(), url, path)
+            
         url = 'https://cloud-api.yandex.net/v1/disk/resources/download?'
         path = f'path=/{self.name_folder}/{self.name_photo}'
         response = requests.get(url+path,  headers={**self.headers})
-        sleep(5)
-        download_url = response.json()['href']
+        download_url = check_load(response.json(), url, path)
         return download_url
+    
+    def dowland_document(self):
+        def check_load(re_json, url, path):
+            if "href" in re_json:
+                download_url = re_json['href']
+                return download_url
+            else:
+                sleep(3)
+                response = requests.get(url+path,  headers={**self.headers})
+                return check_load(response.json(), url, path)
+            
+        url = 'https://cloud-api.yandex.net/v1/disk/resources/download?'
+        path = f'path=/{self.name_folder}/{self.name_photo}'
+        response = requests.get(url+path,  headers={**self.headers})
+        download_url = check_load(response.json(), url, path)
+        return download_url
+        

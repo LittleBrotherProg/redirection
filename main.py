@@ -1,39 +1,20 @@
-from multiprocessing import Process
-from YA import *
-from Fishing_VK import VK
-from Fishing_TG import TG
 import asyncio
+import logging
+from multiprocessing import Process
+from VK.run_VK import run_vk
+from TG.run_TG import run_tg
 
+def start_tg():
+    logging.basicConfig(level=logging.INFO)
+    asyncio.run(run_tg())
 
-class main:
+def start_vk():
+    run_vk()
 
-    def __init__(self):
-        self.vk = VK
-        self.tg = TG
-
-    def start_vk(self):
-        vk = VK
-        vk.fishing_start()
-
-    def start_tg(self):
-        tg = TG
-        tg.fishing_start()
-
-# Запуск программы
-
-# class transit(main):
-    
-#     def accept_forward_text(self, text, identifier, random_id):
-#         if identifier == 'vk':
-#             asyncio.run(self.vk.accept_message(text, random_id))
-#         if identifier == 'tg':
-#             self.tg.accept_message(text)
-
-if __name__ == '__main__':
-    start = main
-    g1 = Process(target=start.start_vk)
-    g2 = Process(target=start.start_tg)
-    g1.start()
-    g2.start()
-    g1.join()
-    g2.join()
+if __name__ == "__main__":
+    Vkontacte = Process(target=start_vk)
+    Telegram = Process(target=start_tg)
+    Vkontacte.start()
+    Telegram.start()
+    Vkontacte.join()
+    Telegram.join()
