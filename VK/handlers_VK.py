@@ -8,7 +8,8 @@ peer_id = os.getenv("KATEVK")
 
 @bot.on.private_message()
 async def catching_message(ms: Message):
-    await send_messages_tg(ms.text)
+    if ms.peer_id == peer_id:
+        await send_messages_tg(ms.text)
 
 
     
