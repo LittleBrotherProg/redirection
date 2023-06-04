@@ -17,32 +17,50 @@ async def get_photo(msg: Message):
     info_photo = msg.photo[-1]
     file = await bot.get_file(info_photo.file_id)
     url = f'https://api.telegram.org/file/bot{os.getenv("USERTG")}/{file.file_path}'
-    ya = YA(url,  
+    ya = YA(
+            url,  
             str(info_photo.file_size) + '.jpg', 
             info_photo.file_size
             )
     ya.create_folder()
     ya.loading_profile_picture()
     dowland_url = ya.dowland_photo()
-    await send_photo_vk(dowland_url, msg.message_id)
+    await send_photo_vk(
+                        dowland_url, 
+                        msg.message_id
+                        )
     
 @router.message(F.document)
 async def message_handler(msg: Message):
     document = msg.document
     file = await bot.get_file(document.file_id)
     url = f'https://api.telegram.org/file/bot{os.getenv("USERTG")}/{file.file_path}'
-    ya = YA(url,  
+    ya = YA(
+            url,  
             str(document.file_name), 
             document.file_size
             )
     ya.create_folder()
     ya.loading_profile_picture()
     dowland_url = ya.dowland_document()
-    await send_document_vk(dowland_url, msg.message_id, document.file_name)
+    await send_document_vk(
+                            dowland_url, 
+                            msg.message_id, 
+                            document.file_name
+                            )
 
 @router.message()
 async def message_handler(msg: Message):
-    await send_messages_vk(msg.text, msg.message_id)
+    await send_messages_vk(
+                            msg.text, 
+                            msg.message_id
+                            )
     
 async def on_startup(_):
-    await bot.send_message(os.getenv("METG"), 'Переадресат запущен')
+    await bot.send_message(
+                            os.getenv("METG"), 
+                            open(
+                                'info.txt', 
+                                encoding="utf-8"
+                                ).read()
+                            )
